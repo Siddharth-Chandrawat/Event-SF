@@ -1,31 +1,27 @@
 import express from 'express'
 import cors from 'cors'
+import { initOraclePool } from "./db/db.js";
+import authRoutes from "./routes/auth.js";
 import { configDotenv } from 'dotenv';
-import connectDB from './db.js';
-import notesRouter from './routes/notes.routes.js';
 configDotenv();
-const app = express();
-const PORT = process.env.PORT || 8001
 
-app.use(cors());
+const PORT = process.env.PORT || 8001
+const app = express();
+
+app.use(
+    cors({
+      origin: "http://localhost:5173", // your Vite frontend
+      credentials: true,
+    })
+);
 
 app.use(express.json());
 
-app.get('/api/name', (req, res) => {
-  res.json({name: "Samay", age:20});
-})
+app.use("/api/auth", authRoutes);
 
-app.get('/test-db', async (req, res) => {
-    const connection = await connectDB();
-    if(connection) {
-        res.send("💪 Database connection successful...");
-    }
-    else {
-        res.status(500).send("😵 Database connection failed...")
-    }
-})
+await initOraclePool(); // Initialize DB pool before setting up routes
+
 
 app.listen(PORT, () => {
-    console.log(`👾 Server is running on http://localhost:${PORT}`);
-    
+    console.log(`👾 Server is running on http://localhost:${PORT}`);    
 })
