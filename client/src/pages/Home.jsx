@@ -1,19 +1,14 @@
 import Dashboard from "./Dashboard.jsx";
 import useAuth from "../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar.jsx";
 
 const Home = () => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+  const { user } = useAuth();
 
   return (
-    <div className="max-w-lg mx-auto mt-12">
-      <h1 className="text-3xl font-bold mb-4">Welcome to the Home Page 🎉</h1>
+    <>
+    <Navbar />
+    <div className="max-w-lg mx-auto mt-20 px-4">
       {user ? (
         <div className="space-y-2">
           <p>
@@ -23,23 +18,12 @@ const Home = () => {
             <strong>Role:</strong> {user.role}
           </p>
           <Dashboard />
-          <button
-            onClick={() => navigate("/create")}
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-          >
-            Create Event
-          </button>
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 text-white px-4 py-2 rounded"
-          >
-            Logout
-          </button>
         </div>
       ) : (
         <p>Loading user data...</p>
       )}
     </div>
+    </>
   );
 };
 
