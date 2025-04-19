@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import {generateTokens} from "../utils/auth.js";
+import {generateTokens, normalizeUser} from "../utils/auth.js";
 
 import { registerUser, getUserByEmail } from "../db/authQueries.js";
 
@@ -11,7 +11,7 @@ const register = async (req, res) => {
   try {
     // Check if user already exists
     const existingUser = await getUserByEmail(email);
-    if (existingUser) {
+    if (existingUser && role == existingUser.role) {
       return res.status(400).json({ msg: "Email is already registered" });
     }
 
@@ -42,9 +42,10 @@ const login = async (req, res) => {
   const { email, password } = req.body;
 
   const user = await getUserByEmail(email);
+
   if (!user) return res.status(400).json({ msg: "User does not exist" });
 
-  const isMatch = await bcrypt.compare(password, user.PASSWORD);
+  const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
 
   const { accessToken, refreshToken } = generateTokens(user);
@@ -60,11 +61,28 @@ const login = async (req, res) => {
   res.status(200).json({
     accessToken,
     user: {
-      email: user.EMAIL,
-      role: user.ROLE,
+      email: user.email,
+      role: user.role,
     },
   });
 };
 
+const refreshAccessToken = (req, res) => {
+  const token = req.cookies.refreshToken;
 
-export default {register, login}
+  if (!token) return res.status(401).json({ msg: "No refresh token" });
+
+  jwt.verify(token, process.env.JWT_REFRESH_SECRET, (err, decoded) => {
+    if (err) return res.status(403).json({ msg: "Invalid refresh token" });
+
+    const accessToken = jwt.sign(
+      { id: decoded.id, role: decoded.role },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.ACCESS_TOKEN_EXPIRES }
+    );
+
+    res.status(200).json({ accessToken });
+  });
+};
+
+export default {register, login, refreshAccessToken}

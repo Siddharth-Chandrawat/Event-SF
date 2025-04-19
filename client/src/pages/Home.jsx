@@ -1,3 +1,4 @@
+import Dashboard from "./Dashboard.jsx";
 import useAuth from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
@@ -21,6 +22,7 @@ const Home = () => {
           <p>
             <strong>Role:</strong> {user.role}
           </p>
+          <Dashboard />
           <button
             onClick={handleLogout}
             className="bg-red-500 text-white px-4 py-2 rounded"

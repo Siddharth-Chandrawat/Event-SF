@@ -1,17 +1,26 @@
-import {useState, useEffect} from 'react'
+import  useAuth  from "../hooks/useAuth.js";
+import OrganizerDashboard from "../components/OrganizerDashboard.jsx";
 
-export default function Dashboard() {
-  const [name, setName] = useState('');
-
-  useEffect(() => {
-    fetch('/api/name')
-    .then(res => res.json())
-    .then(data => setName(data.name))
-
-  }, [])
-  
+const ParticipantDashboard = () => {
   return (
-    <p> Welcome {name} </p>
-  );
+    <p> ParticipantDashboard </p>
+  )
 }
 
+const Dashboard = () => {
+  const { user } = useAuth();
+
+  if (!user) return <p>Loading...</p>;
+
+  return (
+    <>
+      {user.role === "organizer" ? (
+        <OrganizerDashboard />
+      ) : (
+        <ParticipantDashboard />
+      )}
+    </>
+  );
+};
+
+export default Dashboard;

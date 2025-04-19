@@ -10,7 +10,7 @@ export const getUserByEmail = async (email) => {
       [email],
       { outFormat: OracleDB.OUT_FORMAT_OBJECT }
     );
-    return result.rows[0];
+    return normalizeUser(result.rows[0]);
   } finally {
     await conn.close();
   }
