@@ -47,17 +47,24 @@ export const getOrganizerEvents = async (req, res) => {
 };
 
 
+
 export const getAllEvents = async (req, res) => {
   try {
     const { date, month } = req.query;
+    console.log("Received filters:", { date, month });
 
     const events = await getAllEventsQuery(date, month);
+
+    //const actualMonth = date ? null : month;
+    //const events = await getAllEventsQuery(date, actualMonth);
+
     res.json(events);
   } catch (error) {
     console.error("Error fetching all events:", error);
-    res.status(500).json({ msg: "Failed to fetch events" });
+    res.status(500).json({ msg: "Failed to fetch events", error: error.message });
   }
 };
+
 
 export const getParticipantEvents = async (req, res) => {
   try {

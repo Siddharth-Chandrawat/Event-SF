@@ -25,11 +25,11 @@ CREATE TABLE participants (
   FOREIGN KEY (participant_user_id) REFERENCES users(id)
 );
 
-INSERT INTO events (event_title, event_description, event_organizer_id, event_start_date, event_start_time, event_end_time, event_location) 
-VALUES ('Tech Conference 2023', 'A conference about the latest in technology.', 1, TO_DATE('2023-11-15', 'YYYY-MM-DD'), '09:00 AM', '05:00 PM', 'San Francisco');
+-- INSERT INTO events (event_title, event_description, event_organizer_id, event_start_date, event_start_time, event_end_time, event_location) 
+-- VALUES ('Tech Conference 2023', 'A conference about the latest in technology.', 1, TO_DATE('2023-11-15', 'YYYY-MM-DD'), '09:00 AM', '05:00 PM', 'San Francisco');
 
-INSERT INTO events (event_title, event_description, event_organizer_id, event_start_date, event_start_time, event_end_time, event_location) 
-VALUES ('Art Expo 2023', 'An exhibition showcasing modern art.', 1, TO_DATE('2023-12-01', 'YYYY-MM-DD'), '10:00 AM', '06:00 PM', 'Los Angeles');
+-- INSERT INTO events (event_title, event_description, event_organizer_id, event_start_date, event_start_time, event_end_time, event_location) 
+-- VALUES ('Art Expo 2023', 'An exhibition showcasing modern art.', 1, TO_DATE('2023-12-01', 'YYYY-MM-DD'), '10:00 AM', '06:00 PM', 'Los Angeles');
 
 
 select * from events;

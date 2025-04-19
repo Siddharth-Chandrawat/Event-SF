@@ -39,24 +39,31 @@ export const createEventQuery = async ({
 
 
 
+
 export const getAllEventsQuery = async (date, month) => {
   const conn = await getConnection();
   try {
+    
     let query = `SELECT * FROM events`;
-    let conditions = [];
-    let params = {};
+    let params = {}; // Only include what is actually used
 
-    if (date) {
-      conditions.push(`TRUNC(event_start_date) = TO_DATE(:date, 'YYYY-MM-DD')`);
-      params.date = date;
-    } else if (month) {
-      conditions.push(`EXTRACT(MONTH FROM event_start_date) = :month`);
-      params.month = month;
+    //chal nahi rha with date, maybe params ke andar 'data' variable ka naam change karna
+    //if (date !== '') {
+    //  params.date = date; // pass as 'YYYY-MM-DD'
+    //  query += ` WHERE TRUNC(event_start_date) = TO_DATE(:date, 'YYYY-MM-DD')`;
+    //} else if (month !== '') {
+    //  params.month = parseInt(month, 10);
+    //  query += ` WHERE EXTRACT(MONTH FROM event_start_date) = :month`;
+    //}
+
+    //query += ` WHERE TRUNC(event_start_date) = TO_DATE('2025-04-23', 'YYYY-MM-DD')`;
+    if (month !== '') {
+      params.month = parseInt(month, 10);
+      query += ` WHERE EXTRACT(MONTH FROM event_start_date) = :month`;
     }
 
-    if (conditions.length) {
-      query += " WHERE " + conditions.join(" AND ");
-    }
+    console.log("Query:", query);
+    console.log("Params:", params);
 
     const result = await conn.execute(query, params, {
       outFormat: OracleDB.OUT_FORMAT_OBJECT,
@@ -76,7 +83,6 @@ export const getAllEventsQuery = async (date, month) => {
     await conn.close();
   }
 };
-
 
 
 export const getOrganizerEventsQuery = async (organizerId, date, month) => {
@@ -117,15 +123,14 @@ export const getOrganizerEventsQuery = async (organizerId, date, month) => {
 
 
 
-
 export const getParticipantEventsQuery = async (participantId, date, month) => {
   const conn = await getConnection();
   try {
     let query = `
       SELECT e.*
       FROM events e
-      JOIN event_participants ep ON e.event_id = ep.event_id
-      WHERE ep.user_id = :participantId
+      JOIN participants p ON e.event_id = p.participant_event_id
+      WHERE p.participant_user_id = :participantId
     `;
     let params = { participantId };
 
@@ -155,4 +160,5 @@ export const getParticipantEventsQuery = async (participantId, date, month) => {
     await conn.close();
   }
 };
+
 

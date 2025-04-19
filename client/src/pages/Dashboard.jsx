@@ -1,11 +1,6 @@
 import  useAuth  from "../hooks/useAuth.js";
 import OrganizerDashboard from "../components/OrganizerDashboard.jsx";
-
-const ParticipantDashboard = () => {
-  return (
-    <p> ParticipantDashboard </p>
-  )
-}
+import ParticipantDashboard from "../components/ParticipantDashboard.jsx"
 
 const Dashboard = () => {
   const { user } = useAuth();

@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import { AuthProvider } from "./contexts/AuthContext";
 import {EventProvider} from "./contexts/EventContext.jsx"
 import ProtectedRoute from "./components/ProtectedRoute";
+import EventCreator from "./pages/CreateEvent.jsx"
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
 
             {/* Home (currently accessible to all, we'll protect it later) */}
             <Route path="/home" element={<ProtectedRoute> <Home /> </ProtectedRoute>} />
+            <Route path="/create" element={<ProtectedRoute> < EventCreator/> </ProtectedRoute>} />
           </Routes>
         </EventProvider>
       </AuthProvider>

@@ -4,12 +4,17 @@ export const getOrganizerEvents = async () => {
   return await axiosInstance.get("/events/organizer");
 };
 
-export const getParticipantEvents = async () => {
-  return await axiosInstance.get("/events/participant/all");
+
+export const getParticipantEvents = async (filters = {}) => {
+  return await axiosInstance.get("/events/participant/all", {
+    params: filters,
+  });
 };
 
-export const getMyEvents = async () => {
-  return await axiosInstance.get("/events/participant/myevents");
+export const getMyEvents = async (filters = {}) => {
+  return await axiosInstance.get("/events/participant/myevents", {
+    params: filters,
+  });
 };
 
 export const createNewEvent = async (eventData) => {

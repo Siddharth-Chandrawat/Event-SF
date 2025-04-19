@@ -1,8 +1,6 @@
-
 import { useEffect } from "react";
 import { useEventContext } from "../hooks/useEventContext.js";
 import EventCard from "../components/EventCard";
-import EventForm from "../components/EventForm";
 
 const OrganizerDashboard = () => {
   const { events, fetchOrganizerEvents, createEvent, loading, error } = useEventContext();
@@ -11,19 +9,9 @@ const OrganizerDashboard = () => {
     fetchOrganizerEvents();
   }, []);
 
-  const handleCreate = async (eventData) => {
-    await createEvent(eventData); // context handles update
-  };
-
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-3xl font-bold text-gray-800">Organizer Dashboard</h1>
-
-      {/* Event Creation Form */}
-      <div className="bg-white rounded-2xl shadow-md p-4">
-        <h2 className="text-xl font-semibold mb-2">Create a New Event</h2>
-        <EventForm onSubmit={handleCreate} />
-      </div>
 
       {/* Loading/Error Handling */}
       {loading && <p className="text-blue-600">Loading events...</p>}
