@@ -16,11 +16,15 @@ export const generateTokens = (user) => {
   return { accessToken, refreshToken };
 };
 
-export const normalizeUser = (dbUser) => ({
-  id: dbUser.ID,
-  email: dbUser.EMAIL,
-  password: dbUser.PASSWORD,
-  role: dbUser.ROLE,
-});
+export const normalizeUser = (dbUser) => {
+  if(dbUser){
+    return {
+      id: dbUser.ID,
+      email: dbUser.EMAIL,
+      password: dbUser.PASSWORD,
+      role: dbUser.ROLE,
+    }
+  }
+};
 
 
