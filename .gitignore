@@ -1,0 +1,10 @@
+
+# Node modules
+server/node_modules/
+server/node_modules/
+
+# Environment variables
+.env
+
+# Specific file
+server/db/db.js
