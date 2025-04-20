@@ -1,13 +1,18 @@
+import {useNavigate} from "react-router-dom"
 
 const EventCard = ({
   event,
   showOrganizer = false,
   onJoinClick = null, // for participant dashboard, if needed
 }) => {
+  const navigate = useNavigate();
+  const handleClick = () => {
+    navigate(`/events/${event.EVENT_ID}`)
+  }
   return (
-    <div className="bg-white shadow-md rounded-2xl p-4 mb-4 border border-gray-200">
+    <div className="bg-white shadow-md rounded-2xl p-4 mb-4 border border-gray-200" onClick={handleClick}>
       <div className="flex justify-between items-start">
-        <h3 className="text-xl font-bold text-gray-800">{event.EVENT_TITLE}</h3>
+        <h2 className="text-xl font-bold text-gray-800">{event.EVENT_TITLE}</h2>
         <span className="text-sm text-gray-500">
           {new Date(event.EVENT_START_DATE).toLocaleDateString()}
         </span>

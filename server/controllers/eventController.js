@@ -1,4 +1,5 @@
 import { createEventQuery, getAllEventsQuery, getOrganizerEventsQuery, getParticipantEventsQuery} from "../db/eventQueries.js";
+import { fetchEventById } from "../db/eventQueries.js";
 
 export const createEvent = async (req, res) => {
   const { title, description, location, start_date, start_time, end_time } = req.body;
@@ -47,17 +48,24 @@ export const getOrganizerEvents = async (req, res) => {
 };
 
 
+
 export const getAllEvents = async (req, res) => {
   try {
     const { date, month } = req.query;
+    console.log("Received filters:", { date, month });
 
     const events = await getAllEventsQuery(date, month);
+
+    //const actualMonth = date ? null : month;
+    //const events = await getAllEventsQuery(date, actualMonth);
+
     res.json(events);
   } catch (error) {
     console.error("Error fetching all events:", error);
-    res.status(500).json({ msg: "Failed to fetch events" });
+    res.status(500).json({ msg: "Failed to fetch events", error: error.message });
   }
 };
+
 
 export const getParticipantEvents = async (req, res) => {
   try {
@@ -69,5 +77,23 @@ export const getParticipantEvents = async (req, res) => {
   } catch (error) {
     console.error("Error fetching participant's events:", error);
     res.status(500).json({ msg: "Failed to fetch events" });
+  }
+};
+
+
+export const getEventById = async (req, res) => {
+  const { eventId } = req.params;
+
+  try {
+    const event = await fetchEventById(eventId);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    res.json(event);
+  } catch (error) {
+    console.error("Error fetching event:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
