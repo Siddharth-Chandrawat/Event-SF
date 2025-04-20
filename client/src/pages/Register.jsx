@@ -6,7 +6,7 @@ const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ email: "", password: "", role: "participant" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", role: "participant" });
   const [error, setError] = useState("");
 
   const handleChange = (e) =>
@@ -15,13 +15,13 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await register(form.email, form.password, form.role);
+      // Include form.name along with email, password, and role
+      await register(form.name, form.email, form.password, form.role);
       navigate("/home");
     } catch (err) {
       console.log(err.message);
       setError(err.message);
     }
-    
   };
 
   return (
@@ -29,6 +29,13 @@ const Register = () => {
       <h2 className="text-2xl font-semibold mb-4">Register</h2>
       {error && <p className="text-red-500">{error}</p>}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <input
+          name="name"
+          placeholder="Name"
+          value={form.name}
+          onChange={handleChange}
+          className="border p-2"
+        />
         <input
           name="email"
           placeholder="Email"
@@ -55,7 +62,6 @@ const Register = () => {
           Register
         </button>
       </form>
-      
     </div>
   );
 };

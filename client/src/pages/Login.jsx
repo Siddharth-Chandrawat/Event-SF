@@ -24,7 +24,7 @@ const Login = () => {
   };
 
   return (
-    <div className="max-w-sm mx-auto mt-12">
+    <div className="max-w-xl mx-auto mt-12">
       <h2 className="text-2xl font-semibold mb-4">Login</h2>
       {error && <p className="text-red-500">{error}</p>}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -33,7 +33,7 @@ const Login = () => {
           placeholder="Email"
           value={form.email}
           onChange={handleChange}
-          className="border p-2"
+          className="border p-2 w-full"
         />
         <input
           name="password"
@@ -41,7 +41,7 @@ const Login = () => {
           placeholder="Password"
           value={form.password}
           onChange={handleChange}
-          className="border p-2"
+          className="border p-2 w-full"
         />
         <button type="submit" className="bg-blue-500 text-white p-2 rounded">
           Login

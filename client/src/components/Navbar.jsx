@@ -3,7 +3,7 @@ import useAuth from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
 export default function Navbar() {
-  const { logout } = useAuth();
+  const { user , logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -11,12 +11,13 @@ export default function Navbar() {
     navigate("/login");
   };
   return (
-    <nav className="w-full bg-white shadow-md z-50">
+    <>
+    <nav className="relative w-full bg-white shadow-md z-50">
       <div className="flex justify-between items-center p-4">
         {/* Left side: Home */}
         <div>
           <Link
-            to="/"
+            to="/home"
             className="inline-flex items-center justify-center bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
           >
             Home
@@ -25,14 +26,15 @@ export default function Navbar() {
 
         {/* Right side: Other links */}
         <ul className="flex space-x-4">
+          {user?.role == "organizer" && (
           <li>
             <Link
-              to="/dashboard"
+              to="/create"
               className="inline-flex items-center justify-center bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
             >
               Create Event
             </Link>
-          </li>
+          </li>)}
           <li>
             <Link
               to="/user"
@@ -52,5 +54,6 @@ export default function Navbar() {
         </ul>
       </div>
     </nav>
+  </>
   );
 }

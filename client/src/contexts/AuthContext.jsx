@@ -33,9 +33,9 @@ export const AuthProvider = ({ children }) => {
   };
    
 
-  const register = async (email, password, role) => {
+  const register = async (name, email, password, role) => {
     try {
-      const res = await registerUser(email, password, role);
+      const res = await registerUser(name, email, password, role);
       const { token, user } = res.data;
       localStorage.setItem("token", token);
       setUser(user);

@@ -9,11 +9,13 @@ import {EventProvider} from "./contexts/EventContext.jsx"
 import ProtectedRoute from "./components/ProtectedRoute";
 import EventCreator from "./pages/CreateEvent.jsx"
 import EventPage from "./pages/EventPage.jsx";
+import "./App.css"; 
 const App = () => {
   return (
     <Router>
       <AuthProvider>
         <EventProvider>
+        <div className="bg-gray-100 min-h-screen flex flex-col">
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Landing />} />
@@ -26,6 +28,7 @@ const App = () => {
             <Route path="/create" element={<ProtectedRoute> < EventCreator/> </ProtectedRoute>} />
             <Route path="/events/:eventId" element={<ProtectedRoute> <EventPage /> </ProtectedRoute>} />
       </Routes>
+      </div>
     </EventProvider>
   </AuthProvider>
 </Router>

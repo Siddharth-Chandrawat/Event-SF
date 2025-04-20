@@ -1,16 +1,18 @@
 import EventForm from "../components/EventForm";
+import Navbar from "../components/Navbar";
 
 const EventCreator = () => {
-
   const handleCreate = async (eventData) => {
     await createEvent(eventData); // context handles update
   };
 
   return (
-      <div className="bg-white rounded-2xl shadow-md p-4">
-        <h2 className="text-xl font-semibold mb-2">Create a New Event</h2>
+    <>
+      <Navbar />
+      <div className="p-6">
         <EventForm onSubmit={handleCreate} />
       </div>
+    </>
   )
 }
 

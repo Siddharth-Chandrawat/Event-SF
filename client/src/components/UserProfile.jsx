@@ -1,86 +1,100 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { AuthContext } from '../contexts/AuthContext'; // Adjust the import path to your context
+import React, { useContext, useState, useEffect } from 'react';
+import { AuthContext } from '../contexts/AuthContext';
+import { updateUserProfile } from '../api/auth'; // updated call
 
-const UserProfile = () => {
-  const { user, setUser } = useContext(AuthContext); // Access user data from AuthContext
+export default function UserProfile() {
+  const { user, setUser } = useContext(AuthContext);
   const [editMode, setEditMode] = useState(false);
-  const [tempUser, setTempUser] = useState(user); // Local state for editing user data
+  const [tempEmail, setTempEmail] = useState(user.email);
+  const [tempName, setTempName] = useState(user.name);
 
+  // Sync temp fields when not editing
   useEffect(() => {
-    // Update the temporary user state if the user context changes
-    setTempUser(user);
-  }, [user]);
+    if (!editMode) {
+      setTempEmail(user.email);
+      setTempName(user.name);
+    }
+  }, [user.email, user.name, editMode]);
 
-  const handleChange = (e) => {
-    setTempUser({ ...tempUser, [e.target.name]: e.target.value });
+  const handleSave = async () => {
+    const emailUnchanged = tempEmail === user.email;
+    const nameUnchanged = tempName === user.name;
+  
+    // If nothing has changed, don't send a request
+    if (emailUnchanged && nameUnchanged) {
+      setEditMode(false);
+      return;
+    }
+  
+    const payload = {
+      email: emailUnchanged ? "" : tempEmail,
+      name: nameUnchanged ? "" : tempName,
+    };
+  
+    try {
+      const response = await updateUserProfile(payload);
+      const updatedUser = response.user;
+      setUser(updatedUser);
+      setEditMode(false);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
   };
-
-  const handleSave = () => {
-    // Update the user in the AuthContext after editing
-    setUser(tempUser);
-    setEditMode(false);
-    alert('User data saved!');
-    
-    // You can add a backend call here to persist the changes
-    // Example: updateUserProfile(tempUser).then(() => { ... });
-  };
-
-  if (!user) {
-    return <div>Loading...</div>; // If user is not loaded yet
-  }
+  
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6 flex items-center gap-6">
-      <div className="flex-1">
+    <div className="flex items-center space-x-4">
+      {/* Circle with first letter of name or email */}
+      <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-xl font-bold">
+        {(user.name || user.email)?.charAt(0).toUpperCase()}
+      </div>
+
+      {/* Name, Email, Role */}
+      <div className="flex flex-col gap-1">
         {editMode ? (
-          <div className="space-y-2">
+          <>
             <input
               type="text"
-              name="name"
-              value={tempUser.name}
-              onChange={handleChange}
-              className="input w-full"
+              value={tempName}
+              onChange={(e) => setTempName(e.target.value)}
               placeholder="Name"
+              className="border px-2 py-1 rounded"
             />
             <input
               type="email"
-              name="email"
-              value={tempUser.email}
-              onChange={handleChange}
-              className="input w-full"
+              value={tempEmail}
+              onChange={(e) => setTempEmail(e.target.value)}
               placeholder="Email"
+              className="border px-2 py-1 rounded"
             />
-            <input
-              type="text"
-              name="role"
-              value={tempUser.role}
-              onChange={handleChange}
-              className="input w-full"
-              placeholder="Role"
-            />
-            <button
-              onClick={handleSave}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
-              Save
-            </button>
-          </div>
+          </>
         ) : (
           <>
-            <h2 className="text-2xl font-bold">{tempUser.name}</h2>
-            <p className="text-gray-600">{tempUser.email}</p>
-            <p className="text-gray-500 italic mb-2">{tempUser.role}</p>
-            <button
-              onClick={() => setEditMode(true)}
-              className="bg-yellow-500 text-white px-4 py-1 rounded hover:bg-yellow-600"
-            >
-              Edit
-            </button>
+            <span>{user.name}</span>
+            <span>{user.email}</span>
           </>
+        )}
+        <span>{user.role}</span>
+      </div>
+
+      {/* Edit/Save button */}
+      <div>
+        {editMode ? (
+          <button
+            onClick={handleSave}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+          >
+            Save
+          </button>
+        ) : (
+          <button
+            onClick={() => setEditMode(true)}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+          >
+            Edit
+          </button>
         )}
       </div>
     </div>
   );
-};
-
-export default UserProfile;
+}

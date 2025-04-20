@@ -8,3 +8,6 @@ export const registerUser = (email, password, role) => {
   return axios.post("/auth/register", { email, password, role }, { withCredentials: true });
 };
 
+export const updateUserProfile = ({ email, name }) => {
+  return axios.post("/auth/edit", { email, name }, { withCredentials: true });
+};

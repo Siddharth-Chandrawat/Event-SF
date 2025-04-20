@@ -50,7 +50,7 @@ const EventForm = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white p-4 rounded-xl shadow-md space-y-4 w-full max-w-md"
+      className="bg-white p-4 rounded-xl shadow-md space-y-4 w-full max-w-md flex flex-col"
     >
       <h2 className="text-xl font-semibold">Create New Event</h2>
 
