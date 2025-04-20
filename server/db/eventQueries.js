@@ -35,9 +35,40 @@ export const createEventQuery = async ({
     await conn.close();
   }
 };
-// queries/eventQueries.js
 
+export const fetchEventById = async (eventId) => {
+  let connection;
 
+  try {
+    connection = await getConnection();
+
+    const result = await connection.execute(
+      `
+      SELECT * FROM events
+      WHERE event_id = :eventId
+      `,
+      [eventId],
+      { outFormat: OracleDB.OUT_FORMAT_OBJECT, }
+    );
+
+    const rows = await Promise.all(
+      result.rows.map(async (row) => {
+        if (row.EVENT_DESCRIPTION && typeof row.EVENT_DESCRIPTION === "object") {
+          row.EVENT_DESCRIPTION = await readClob(row.EVENT_DESCRIPTION);
+        }
+        return row;
+      })
+    );
+
+    return rows[0] || null;
+  } catch (err) {
+    throw err;
+  } finally {
+    if (connection) {
+      await connection.close();
+    }
+  }
+};
 
 
 export const getAllEventsQuery = async (date, month) => {

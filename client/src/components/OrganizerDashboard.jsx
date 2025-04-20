@@ -23,7 +23,7 @@ const OrganizerDashboard = () => {
         {events.length === 0 ? (
           <p className="text-gray-500">No events created yet.</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {events.map((event) => (
               <EventCard key={event.event_id} event={event} showOrganizer />
             ))}

@@ -1,4 +1,5 @@
 import { createEventQuery, getAllEventsQuery, getOrganizerEventsQuery, getParticipantEventsQuery} from "../db/eventQueries.js";
+import { fetchEventById } from "../db/eventQueries.js";
 
 export const createEvent = async (req, res) => {
   const { title, description, location, start_date, start_time, end_time } = req.body;
@@ -76,5 +77,23 @@ export const getParticipantEvents = async (req, res) => {
   } catch (error) {
     console.error("Error fetching participant's events:", error);
     res.status(500).json({ msg: "Failed to fetch events" });
+  }
+};
+
+
+export const getEventById = async (req, res) => {
+  const { eventId } = req.params;
+
+  try {
+    const event = await fetchEventById(eventId);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    res.json(event);
+  } catch (error) {
+    console.error("Error fetching event:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

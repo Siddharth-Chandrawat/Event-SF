@@ -8,7 +8,7 @@ const Home = () => {
   return (
     <>
     <Navbar />
-    <div className="max-w-lg mx-auto mt-20 px-4">
+    <div className="mx-auto mt-20 px-4">
       {user ? (
         <div className="space-y-2">
           <p>

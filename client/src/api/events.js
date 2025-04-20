@@ -20,3 +20,8 @@ export const getMyEvents = async (filters = {}) => {
 export const createNewEvent = async (eventData) => {
   return await axiosInstance.post("/events/create", eventData);
 } 
+
+export const getEventById = async (eventId) => {
+  const response = await axiosInstance.get(`/events/${eventId}`);
+  return response.data;
+};
