@@ -35,7 +35,7 @@ export default function Navbar() {
           </li>
           <li>
             <Link
-              to="/My Profile"
+              to="/user"
               className="inline-flex items-center justify-center bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
             >
               Profile
