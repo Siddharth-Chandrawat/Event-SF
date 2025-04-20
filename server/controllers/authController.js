@@ -1,12 +1,12 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import {generateTokens, normalizeUser} from "../utils/auth.js";
+import {generateTokens, normalizeUser } from "../utils/auth.js";
 
-import { registerUser, getUserByEmail } from "../db/authQueries.js";
+import { registerUser, getUserByEmail, updateUserDetails } from "../db/authQueries.js";
 
 
 const register = async (req, res) => {
-  const { email, password, role } = req.body;
+  const { name, email, password, role } = req.body;
 
   try {
     // Check if user already exists
@@ -16,7 +16,7 @@ const register = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const result = await registerUser(email, hashedPassword, role);
+    const result = await registerUser(name, email, hashedPassword, role);
 
     if (!result.success) {
       return res.status(400).json({ msg: result.msg });
@@ -29,7 +29,7 @@ const register = async (req, res) => {
     return res.status(201).json({
       msg: "User registered",
       token,
-      user: { email, role },
+      user: { name, email, role },
     });
   } catch (error) {
     console.error("Registration error:", error);
@@ -61,6 +61,7 @@ const login = async (req, res) => {
   res.status(200).json({
     accessToken,
     user: {
+      name: user.name,
       email: user.email,
       role: user.role,
     },
@@ -85,4 +86,22 @@ const refreshAccessToken = (req, res) => {
   });
 };
 
-export default {register, login, refreshAccessToken}
+
+export const editUser = async (req, res) => {
+  const { id } = req.user; // assuming userId is set from JWT middleware
+  const { name, email } = req.body;
+
+  if (!id) {
+    return res.status(400).json({ message: "User ID missing" });
+  }
+
+  try {
+    const result = await updateUserDetails(id, name, email);
+    res.status(200).json({ message: "User updated successfully", user: result });
+  } catch (error) {
+    console.error("Edit user error:", error);
+    res.status(500).json({ message: "Failed to update user" });
+  }
+};
+
+export default {register, login, refreshAccessToken, editUser}

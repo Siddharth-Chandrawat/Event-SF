@@ -122,13 +122,6 @@ export const getOrganizerEventsQuery = async (organizerId, date, month) => {
     let query = `SELECT * FROM events WHERE event_organizer_id = :organizerId`;
     let params = { organizerId };
 
-    if (date) {
-      query += ` AND TRUNC(event_start_date) = TO_DATE(:date, 'YYYY-MM-DD')`;
-      params.date = date;
-    } else if (month) {
-      query += ` AND EXTRACT(MONTH FROM event_start_date) = :month`;
-      params.month = month;
-    }
 
     const result = await conn.execute(query, params, {
       outFormat: OracleDB.OUT_FORMAT_OBJECT,
@@ -165,13 +158,21 @@ export const getParticipantEventsQuery = async (participantId, date, month) => {
     `;
     let params = { participantId };
 
-    if (date) {
-      query += ` AND TRUNC(e.event_start_date) = TO_DATE(:date, 'YYYY-MM-DD')`;
-      params.date = date;
-    } else if (month) {
-      query += ` AND EXTRACT(MONTH FROM e.event_start_date) = :month`;
-      params.month = month;
+    //if (date) {
+    //  query += ` AND TRUNC(e.event_start_date) = TO_DATE(:date, 'YYYY-MM-DD')`;
+    //  params.date = date;
+    //} else if (month) {
+    //  query += ` AND EXTRACT(MONTH FROM e.event_start_date) = :month`;
+    //  params.month = month;
+    //}
+
+    if (month !== '') {
+      params.month = parseInt(month, 10);
+      query += ` WHERE EXTRACT(MONTH FROM event_start_date) = :month`;
     }
+
+    console.log("Query:", query);
+    console.log("Params:", params);
 
     const result = await conn.execute(query, params, {
       outFormat: OracleDB.OUT_FORMAT_OBJECT,

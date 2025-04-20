@@ -20,6 +20,7 @@ export const normalizeUser = (dbUser) => {
   if(dbUser){
     return {
       id: dbUser.ID,
+      name: dbUser.NAME,
       email: dbUser.EMAIL,
       password: dbUser.PASSWORD,
       role: dbUser.ROLE,

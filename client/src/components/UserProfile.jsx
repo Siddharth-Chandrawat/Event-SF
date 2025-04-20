@@ -1,12 +1,18 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { AuthContext } from '../contexts/AuthContext';
+import useAuth from '../hooks/useAuth.js';
 import { updateUserProfile } from '../api/auth'; // updated call
 
 export default function UserProfile() {
-  const { user, setUser } = useContext(AuthContext);
+  const {user, setUser} = useAuth();
   const [editMode, setEditMode] = useState(false);
   const [tempEmail, setTempEmail] = useState(user.email);
   const [tempName, setTempName] = useState(user.name);
+
+
+  //useEffect(() => {
+  //  console.log("User context updated:", user);
+  //}, [user]);
+
 
   // Sync temp fields when not editing
   useEffect(() => {
@@ -33,9 +39,10 @@ export default function UserProfile() {
   
     try {
       const response = await updateUserProfile(payload);
-      const updatedUser = response.user;
-      setUser(updatedUser);
+      console.log(response.data);
+      const updatedUser = response.data.user;
       setEditMode(false);
+      setUser(updatedUser);
     } catch (error) {
       console.error("Error updating profile:", error);
     }
@@ -70,8 +77,8 @@ export default function UserProfile() {
           </>
         ) : (
           <>
-            <span>{user.name}</span>
-            <span>{user.email}</span>
+            <span>{tempName}</span>
+            <span>{tempEmail}</span>
           </>
         )}
         <span>{user.role}</span>

@@ -1,37 +1,36 @@
 import { createContext, useState, useEffect } from "react";
 import { loginUser, registerUser } from "../api/auth";
 import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
 
-export const AuthContext = createContext();
+const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
-  // on load, check if token is stored
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        setUser({ email: decoded.email, role: decoded.role });
-      } catch (err) {
-        console.error("Invalid token:", err);
-        localStorage.removeItem("token");
-        setUser(null);
-      }
-    }
-  }, []);
+  //useEffect(() => {
+  //  const token = localStorage.getItem("token");
+  //  if (token) {
+  //    try {
+  //      const decoded = jwtDecode(token);
+  //      setUser({ email: decoded.email, role: decoded.role });
+  //    } catch (err) {
+  //      console.error("Invalid token:", err);
+  //      localStorage.removeItem("token");
+  //      setUser(null);
+  //    }
+  //  }
+  //}, []);
 
-  
   const login = async (email, password) => {
     const res = await loginUser(email, password);
     const { accessToken, user } = res.data;
-  
-    localStorage.setItem("token", accessToken); // authorisation ke liye
-    localStorage.setItem("user", JSON.stringify(user)); //UI ke liye
+
+    localStorage.setItem("token", accessToken);
+    localStorage.setItem("user", JSON.stringify(user));
     setUser(user);
   };
-   
 
   const register = async (name, email, password, role) => {
     try {
@@ -40,21 +39,22 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("token", token);
       setUser(user);
     } catch (err) {
-      const msg = err.response?.data?.msg || err.message; //agar response mein error hua to varna normally
+      const msg = err.response?.data?.msg || err.message;
       throw new Error(msg);
     }
   };
-  
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem("token");
     navigate("/login");
   };
-  
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, login, register, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );
 };
+
+export { AuthContext, AuthProvider };

@@ -3,6 +3,7 @@ import cors from 'cors'
 import { initOraclePool } from "./db/db.js";
 import authRoutes from "./routes/auth.js";
 import eventRoutes from "./routes/eventRoutes.js"
+import feedbackRoutes from "./routes/feedbackRoutes.js";
 import { configDotenv } from 'dotenv';
 configDotenv();
 
@@ -20,6 +21,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/feedback", feedbackRoutes);
 
 await initOraclePool(); // Initialize DB pool before setting up routes
 
