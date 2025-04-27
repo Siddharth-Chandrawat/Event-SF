@@ -25,3 +25,12 @@ export const getEventById = async (eventId) => {
   const response = await axiosInstance.get(`/events/${eventId}`);
   return response.data;
 };
+
+export const postEventFeedback = async (eventId, userId, commentText) => {
+  const response = await axiosInstance.post(
+    "/feedback",
+    { event_id: eventId, user_id: userId, comment_text: commentText },
+  );
+  return response.data;
+};
+

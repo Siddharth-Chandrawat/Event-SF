@@ -22,14 +22,14 @@ const register = async (req, res) => {
       return res.status(400).json({ msg: result.msg });
     }
 
-    const token = jwt.sign({ email, role }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ email, role ,id: result.user.id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
 
     return res.status(201).json({
       msg: "User registered",
       token,
-      user: { name, email, role },
+      user: { id: result.user.id, name, email, role },
     });
   } catch (error) {
     console.error("Registration error:", error);
@@ -61,6 +61,7 @@ const login = async (req, res) => {
   res.status(200).json({
     accessToken,
     user: {
+      id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,

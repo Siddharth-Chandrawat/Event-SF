@@ -52,7 +52,7 @@ export default function UserProfile() {
   return (
     <div className="flex items-center space-x-4">
       {/* Circle with first letter of name or email */}
-      <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-xl font-bold">
+      <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-3xl font-bold">
         {(user.name || user.email)?.charAt(0).toUpperCase()}
       </div>
 

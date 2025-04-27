@@ -2,13 +2,18 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getEventById } from "../api/events";
 import useAuth from "../hooks/useAuth.js"; 
+import { postEventFeedback } from "../api/events";
 
 const EventPage = () => {
   const { eventId } = useParams();
   const { user } = useAuth();
+  console.log("User:", user);
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackStatus, setFeedbackStatus] = useState(null);
+
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -32,6 +37,18 @@ const EventPage = () => {
 
   const isParticipant = user?.role === "participant";
   const isOrganizer = user?.role === "organizer";
+
+  const handleFeedbackSubmit = async () => {
+    try {
+      postEventFeedback(eventId, user.id,feedbackText); // send feedback to backend
+      setFeedbackStatus({ type: "success", message: "Feedback submitted successfully!" });
+      setFeedbackText(""); // clear textarea if you want
+    } catch (error) {
+      console.error(error);
+      setFeedbackStatus({ type: "error", message: "Failed to submit feedback. Please try again." });
+    }
+  };
+  
 
   return (
     <div className="mx-auto p-6 bg-white shadow  mt-6 ">
@@ -69,13 +86,23 @@ const EventPage = () => {
         {isParticipant && (
           <div className="mb-4">
             <textarea
+              value = {feedbackText}
+              onChange = {e=>setFeedbackText(e.target.value)}
               placeholder="Leave your feedback..."
               className="w-full p-3 border rounded-xl resize-none"
               rows={3}
             />
-            <button className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl">
+            <button 
+              onClick={handleFeedbackSubmit}
+              className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl">
               Submit Feedback
             </button>
+            {feedbackStatus && (
+              <p className={`mt-2 ${feedbackStatus.type === "success" ? "text-green-600" : "text-red-600"}`}>
+                {feedbackStatus.message}
+              </p>
+)}
+
           </div>
         )}
 

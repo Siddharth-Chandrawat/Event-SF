@@ -8,3 +8,5 @@ CREATE TABLE feedback (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE
 );
+
+select * from feedback;

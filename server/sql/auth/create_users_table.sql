@@ -9,3 +9,4 @@ CREATE TABLE users (
   CONSTRAINT unique_email_role UNIQUE (email, role)
 );
 
+select * from users;
