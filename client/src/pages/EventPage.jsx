@@ -2,15 +2,19 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getEventById } from "../api/events";
 import useAuth from "../hooks/useAuth.js"; 
-import { postEventFeedback } from "../api/events";
+import { postEventFeedback, fetchEventFeedback } from "../api/events";
 
 const EventPage = () => {
   const { eventId } = useParams();
   const { user } = useAuth();
-  console.log("User:", user);
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [feedbacks, setFeedbacks]     = useState([]);
+  const [loadingFb, setLoadingFeedback]     = useState(true);
+  const [errorFb, setFeedbackError]         = useState(null);
+
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackStatus, setFeedbackStatus] = useState(null);
 
@@ -29,6 +33,25 @@ const EventPage = () => {
       }
     };
     fetchEvent();
+  }, [eventId]);
+
+  useEffect(() => {
+    const fetchFeedbacks = async () => {
+      try {
+        // ① call your API helper
+        const data = await fetchEventFeedback(eventId);
+        // ② store the array of feedback rows
+        setFeedbacks(data);
+      } catch (err) {
+        console.error(err);
+        setFeedbackError("Failed to load feedback.");
+      } finally {
+        // ③ flip off the loading flag
+        setLoadingFeedback(false);
+      }
+    };
+  
+    fetchFeedbacks();
   }, [eventId]);
 
   if (loading) return <p>Loading event...</p>;
@@ -106,10 +129,41 @@ const EventPage = () => {
           </div>
         )}
 
-        {/* Feedback List will be added here */}
-        <div className="space-y-3">
-          {/* Later populated by fetched comments */}
-          <p className="text-gray-500">No comments yet.</p>
+        <div className="space-y-4">
+          {loadingFb
+            ? <p>Loading feedback…</p>
+            : errorFb
+              ? <p className="text-red-500">{errorFb}</p>
+              : feedbacks.length === 0
+                ? <p className="text-gray-500">No comments yet.</p>
+                : feedbacks.map((fb, idx) => {
+                    // normalize id
+                    const id = fb.FEEDBACK_ID ?? fb.id ?? idx;
+                    // normalize user name
+                    const userName = fb.USER_NAME    // Oracle uppercase
+                                  ?? fb.user_name // snake_case
+                                  ?? fb.userName  // camelCase
+                                  ?? "Unknown";
+                    // normalize comment
+                    const comment = fb.COMMENT_TEXT    // Oracle
+                                  ?? fb.comment_text   // snake_case
+                                  ?? fb.comment        // simple
+                                  ?? "";
+                    // normalize date
+                    const raw = fb.CREATED_AT ?? fb.created_at;
+                    const date = raw
+                      ? new Date(raw).toLocaleString()
+                      : "No timestamp";
+
+                    return (
+                      <div key={id} className="border-b pb-4">
+                        <p className="font-medium">{userName}</p>
+                        <p className="text-gray-700">{comment}</p>
+                        <p className="text-sm text-gray-500">{date}</p>
+                      </div>
+                    );
+                  })
+          }
         </div>
       </div>
     </div>

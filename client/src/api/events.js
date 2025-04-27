@@ -34,3 +34,7 @@ export const postEventFeedback = async (eventId, userId, commentText) => {
   return response.data;
 };
 
+export const fetchEventFeedback = async (eventId) => {
+  const response = await axiosInstance.get(`/feedback/${eventId}`);
+  return response.data; // expect an array of { id, user_id, comment_text, created_at }
+};

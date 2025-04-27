@@ -6,10 +6,18 @@ export const fetchFeedbackByEventId = async (eventId) => {
   const conn = await getConnection();
   try {
     const query = `
-      SELECT feedback_id, event_id, user_id, comment_text, created_at
-      FROM feedback
-      WHERE event_id = :eventId
-      ORDER BY created_at DESC
+      SELECT
+        f.feedback_id,
+        f.event_id,
+        f.user_id,
+        u.name AS user_name,
+        f.comment_text,
+        f.created_at
+      FROM feedback f
+      JOIN users u
+        ON u.id = f.user_id
+      WHERE f.event_id = :eventId
+      ORDER BY f.created_at DESC
     `;
 
     const params = { eventId };
@@ -20,6 +28,7 @@ export const fetchFeedbackByEventId = async (eventId) => {
 
     const rows = await Promise.all(
       result.rows.map(async (row) => {
+        // Convert CLOB to string if necessary
         if (row.COMMENT_TEXT && typeof row.COMMENT_TEXT === "object") {
           row.COMMENT_TEXT = await readClob(row.COMMENT_TEXT);
         }
