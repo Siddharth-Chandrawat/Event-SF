@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { getEventById } from "../api/events";
 import useAuth from "../hooks/useAuth.js"; 
 import { postEventFeedback, fetchEventFeedback } from "../api/events";
+import { joinEvent } from "../api/events";
 
 const EventPage = () => {
   const { eventId } = useParams();
@@ -72,6 +73,20 @@ const EventPage = () => {
     }
   };
   
+  const handleJoin = async () => {
+    try {
+      await joinEvent(eventId); 
+      // optionally set some local state to disable the button
+      alert("You've successfully joined this event!");
+    } catch (err){
+      console.error("Join error:", err);
+      // If it's a 409 conflict, show the precise backend message:
+      if (err.response?.status === 409) {
+        return alert(err.response.data.message);
+      }
+      alert("Could not join the event. Try again.");
+    }
+  };
 
   return (
     <div className="mx-auto p-6 bg-white shadow  mt-6 ">
@@ -93,7 +108,7 @@ const EventPage = () => {
       {isParticipant && (
         <button
           className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl mb-6"
-          onClick={() => console.log(`event ${event.EVENT_ID} joined!`)}
+          onClick={handleJoin}
         >
           Join Event
         </button>
@@ -156,7 +171,7 @@ const EventPage = () => {
                       : "No timestamp";
 
                     return (
-                      <div key={id} className="border-b pb-4">
+                      <div key={id} className="bg-gray-200 rounded-lg p-4 mb-4">
                         <p className="font-medium">{userName}</p>
                         <p className="text-gray-700">{comment}</p>
                         <p className="text-sm text-gray-500">{date}</p>

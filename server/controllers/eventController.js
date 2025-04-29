@@ -1,5 +1,6 @@
 import { createEventQuery, getAllEventsQuery, getOrganizerEventsQuery, getParticipantEventsQuery} from "../db/eventQueries.js";
 import { fetchEventById } from "../db/eventQueries.js";
+import { insertParticipation } from "../db/eventQueries.js";
 
 export const createEvent = async (req, res) => {
   const { title, description, location, start_date, start_time, end_time } = req.body;
@@ -96,4 +97,23 @@ export const getEventById = async (req, res) => {
     console.error("Error fetching event:", error);
     res.status(500).json({ message: "Internal server error" });
   }
+};
+
+export const joinEvent = async (req, res) => {
+  const userId  = req.user.id;                    // from verifyToken
+  const eventId = parseInt(req.params.eventId, 10);
+
+  try {
+    await insertParticipation(userId, eventId);
+    res.status(201).json({ message: "Joined event successfully." });
+  } catch (error) {
+    console.error("Join event error full:", JSON.stringify(error, null, 2));
+  
+    const isConflict = error.errorNum === 1 || error.code === "23505";
+    if (isConflict) {
+      return res.status(409).json({ message: "You have already joined this event." });
+    }
+  
+    return res.status(500).json({ message: "Could not join event.", error: error.message });
+  }  
 };

@@ -193,4 +193,19 @@ export const getParticipantEventsQuery = async (participantId, date, month) => {
   }
 };
 
-
+export const insertParticipation = async (userId, eventId) => {
+  const conn = await getConnection();
+  try {
+    const sql = `
+      INSERT INTO participant_events (user_id, event_id, joined_at)
+      VALUES (:userId, :eventId, SYSTIMESTAMP)
+    `;
+    await conn.execute(
+      sql,
+      { userId, eventId },
+      { autoCommit: true }
+    );
+  } finally {
+    await conn.close();
+  }
+};

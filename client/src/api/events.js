@@ -38,3 +38,12 @@ export const fetchEventFeedback = async (eventId) => {
   const response = await axiosInstance.get(`/feedback/${eventId}`);
   return response.data; // expect an array of { id, user_id, comment_text, created_at }
 };
+
+export const joinEvent = async (eventId) => {
+  const response = await axiosInstance.post(
+    `/events/${eventId}/join`,
+    {},              // no body needed
+    { withCredentials : true } 
+  );
+  return response.data;
+};
