@@ -1,6 +1,7 @@
-import { createEventQuery, getAllEventsQuery, getOrganizerEventsQuery, getParticipantEventsQuery} from "../db/eventQueries.js";
+import { createEventQuery, getAllEventsQuery, getOrganizerEventsQuery } from "../db/eventQueries.js";
 import { fetchEventById } from "../db/eventQueries.js";
 import { insertParticipation } from "../db/eventQueries.js";
+import { getMyEventsQuery } from "../db/eventQueries.js";
 
 export const createEvent = async (req, res) => {
   const { title, description, location, start_date, start_time, end_time } = req.body;
@@ -68,19 +69,23 @@ export const getAllEvents = async (req, res) => {
 };
 
 
-export const getParticipantEvents = async (req, res) => {
+export const getMyEvents = async (req, res) => {
   try {
-    const  id  = req.user.id;
+    const userId = req.user?.id;
     const { date, month } = req.query;
+    //console.log("Received filters:", { date, month });
 
-    const events = await getParticipantEventsQuery(id, date, month);
+    const events = await getMyEventsQuery(userId, date, month);
+
+    //const actualMonth = date ? null : month;
+    //const events = await getAllEventsQuery(date, actualMonth);
+
     res.json(events);
   } catch (error) {
-    console.error("Error fetching participant's events:", error);
-    res.status(500).json({ msg: "Failed to fetch events" });
+    console.error("Error fetching all events:", error);
+    res.status(500).json({ msg: "Failed to fetch events", error: error.message });
   }
 };
-
 
 export const getEventById = async (req, res) => {
   const { eventId } = req.params;
