@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getEventById } from "../api/events";
-import useAuth from "../hooks/useAuth.js"; 
+import useAuth from "../hooks/useAuth.js";
 import { postEventFeedback, fetchEventFeedback } from "../api/events";
 import { joinEvent } from "../api/events";
+import io from 'socket.io-client';
+
+const SOCKET_URL = 'http://localhost:8000';
+const socket = io(SOCKET_URL);
 
 const EventPage = () => {
   const { eventId } = useParams();
@@ -12,13 +16,12 @@ const EventPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [feedbacks, setFeedbacks]     = useState([]);
-  const [loadingFb, setLoadingFeedback]     = useState(true);
-  const [errorFb, setFeedbackError]         = useState(null);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [loadingFb, setLoadingFeedback] = useState(true);
+  const [errorFb, setFeedbackError] = useState(null);
 
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackStatus, setFeedbackStatus] = useState(null);
-
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -36,24 +39,32 @@ const EventPage = () => {
     fetchEvent();
   }, [eventId]);
 
-  useEffect(() => {
-    const fetchFeedbacks = async () => {
-      try {
-        // ① call your API helper
-        const data = await fetchEventFeedback(eventId);
-        // ② store the array of feedback rows
-        setFeedbacks(data);
-      } catch (err) {
-        console.error(err);
-        setFeedbackError("Failed to load feedback.");
-      } finally {
-        // ③ flip off the loading flag
-        setLoadingFeedback(false);
-      }
-    };
-  
-    fetchFeedbacks();
-  }, [eventId]);
+    useEffect(() => {
+      const fetchFeedbacks = async () => {
+        try {
+          const data = await fetchEventFeedback(eventId);
+          setFeedbacks(data);
+        } catch (err) {
+          console.error(err);
+          setFeedbackError("Failed to load feedback.");
+        } finally {
+          setLoadingFeedback(false);
+        }
+      };
+    
+      fetchFeedbacks();
+    
+      const handleNewFeedback = (feedbackData) => {
+        //console.log('New feedback received from socket:', feedbackData);
+        fetchFeedbacks();
+      };
+    
+      socket.on('newFeedback', handleNewFeedback);
+    
+      return () => {
+        socket.off('newFeedback', handleNewFeedback);
+      };
+    }, [eventId, socket]); // Include socket in the dependency array
 
   if (loading) return <p>Loading event...</p>;
   if (error) return <p>{error}</p>;
@@ -64,23 +75,22 @@ const EventPage = () => {
 
   const handleFeedbackSubmit = async () => {
     try {
-      postEventFeedback(eventId, user.id,feedbackText); // send feedback to backend
+      const response = await postEventFeedback(eventId, user.id, feedbackText);
       setFeedbackStatus({ type: "success", message: "Feedback submitted successfully!" });
-      setFeedbackText(""); // clear textarea if you want
+      setFeedbackText("");
+      // The new feedback will be received via the socket and automatically added to the list
     } catch (error) {
       console.error(error);
       setFeedbackStatus({ type: "error", message: "Failed to submit feedback. Please try again." });
     }
   };
-  
+
   const handleJoin = async () => {
     try {
-      await joinEvent(eventId); 
-      // optionally set some local state to disable the button
+      await joinEvent(eventId);
       alert("You've successfully joined this event!");
-    } catch (err){
+    } catch (err) {
       console.error("Join error:", err);
-      // If it's a 409 conflict, show the precise backend message:
       if (err.response?.status === 409) {
         return alert(err.response.data.message);
       }
@@ -116,7 +126,7 @@ const EventPage = () => {
 
       <hr className="my-4" />
 
-      {/* Feedback Section Placeholder */}
+      {/* Feedback Section */}
       <div>
         <h2 className="text-xl font-semibold mb-2">Feedback</h2>
 
@@ -124,61 +134,50 @@ const EventPage = () => {
         {isParticipant && (
           <div className="mb-4">
             <textarea
-              value = {feedbackText}
-              onChange = {e=>setFeedbackText(e.target.value)}
+              value={feedbackText}
+              onChange={(e) => setFeedbackText(e.target.value)}
               placeholder="Leave your feedback..."
               className="w-full p-3 border rounded-xl resize-none"
               rows={3}
             />
-            <button 
+            <button
               onClick={handleFeedbackSubmit}
-              className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl">
+              className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl"
+            >
               Submit Feedback
             </button>
             {feedbackStatus && (
               <p className={`mt-2 ${feedbackStatus.type === "success" ? "text-green-600" : "text-red-600"}`}>
                 {feedbackStatus.message}
               </p>
-)}
-
+            )}
           </div>
         )}
 
         <div className="space-y-4">
-          {loadingFb
-            ? <p>Loading feedback…</p>
-            : errorFb
-              ? <p className="text-red-500">{errorFb}</p>
-              : feedbacks.length === 0
-                ? <p className="text-gray-500">No comments yet.</p>
-                : feedbacks.map((fb, idx) => {
-                    // normalize id
-                    const id = fb.FEEDBACK_ID ?? fb.id ?? idx;
-                    // normalize user name
-                    const userName = fb.USER_NAME    // Oracle uppercase
-                                  ?? fb.user_name // snake_case
-                                  ?? fb.userName  // camelCase
-                                  ?? "Unknown";
-                    // normalize comment
-                    const comment = fb.COMMENT_TEXT    // Oracle
-                                  ?? fb.comment_text   // snake_case
-                                  ?? fb.comment        // simple
-                                  ?? "";
-                    // normalize date
-                    const raw = fb.CREATED_AT ?? fb.created_at;
-                    const date = raw
-                      ? new Date(raw).toLocaleString()
-                      : "No timestamp";
+          {loadingFb ? (
+            <p>Loading feedback…</p>
+          ) : errorFb ? (
+            <p className="text-red-500">{errorFb}</p>
+          ) : feedbacks.length === 0 ? (
+            <p className="text-gray-500">No comments yet.</p>
+          ) : (
+            feedbacks.map((fb, idx) => {
+              const id = fb.FEEDBACK_ID ?? fb.id ?? idx;
+              const userName = fb.USER_NAME ?? fb.user_name ?? fb.userName ?? "Unknown";
+              const comment = fb.COMMENT_TEXT ?? fb.comment_text ?? fb.comment ?? "";
+              const raw = fb.CREATED_AT ?? fb.created_at;
+              const date = raw ? new Date(raw).toLocaleString() : "No timestamp";
 
-                    return (
-                      <div key={id} className="bg-gray-200 rounded-lg p-4 mb-4">
-                        <p className="font-medium">{userName}</p>
-                        <p className="text-gray-700">{comment}</p>
-                        <p className="text-sm text-gray-500">{date}</p>
-                      </div>
-                    );
-                  })
-          }
+              return (
+                <div key={id} className="bg-gray-200 rounded-lg p-4 mb-4">
+                  <p className="font-medium">{userName}</p>
+                  <p className="text-gray-700">{comment}</p>
+                  <p className="text-sm text-gray-500">{date}</p>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     </div>

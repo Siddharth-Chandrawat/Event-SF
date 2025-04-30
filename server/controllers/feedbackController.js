@@ -24,6 +24,13 @@ export const addFeedback = async (req, res) => {
 
   try {
     const newFeedback = await insertFeedback(event_id, user_id, comment_text);
+    const io = req.io;
+    if (io) {
+      io.emit('newFeedback', newFeedback);
+      console.log("New feedback emitted to all clients:", newFeedback);
+    } else {
+      console.error("Socket.IO instance not available in feedback controller.");
+    }
     res.status(201).json(newFeedback);
   } catch (error) {
     console.error("Error adding feedback:", error);

@@ -180,7 +180,7 @@ export const getMyEventsQuery = async (userId, date, month) => {
       params,
       { outFormat: OracleDB.OUT_FORMAT_OBJECT }
     );
-    console.log("Query Result Rows:", result.rows);
+    // console.log("Query Result Rows:", result.rows);
 
     const rows = await Promise.all(
       result.rows.map(async (row) => {
