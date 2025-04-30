@@ -35,8 +35,10 @@ const AuthProvider = ({ children }) => {
   const register = async (name, email, password, role) => {
     try {
       const res = await registerUser(name, email, password, role);
-      const { token, user } = res.data;
-      localStorage.setItem("token", token);
+      const { accessToken, user } = res.data;
+      console.log("userid:", user.id, "Type:", typeof user.id);
+      localStorage.setItem("token", accessToken);
+      localStorage.setItem("user", JSON.stringify(user));
       setUser(user);
     } catch (err) {
       const msg = err.response?.data?.msg || err.message;

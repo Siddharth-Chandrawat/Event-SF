@@ -36,6 +36,7 @@ export const createEvent = async (req, res) => {
 
 export const getOrganizerEvents = async (req, res) => {
   try {
+
     const id = req.user.id;
     const { date, month } = req.query;
 

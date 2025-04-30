@@ -119,6 +119,7 @@ export const getAllEventsQuery = async (date, month) => {
 export const getOrganizerEventsQuery = async (organizerId, date, month) => {
   const conn = await getConnection();
   try {
+    console.log("organizerId:", organizerId, "Type:", typeof organizerId);
     let query = `SELECT * FROM events WHERE event_organizer_id = :organizerId`;
     let params = { organizerId };
 

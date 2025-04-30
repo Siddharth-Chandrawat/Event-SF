@@ -19,12 +19,31 @@ export const getUserByEmail = async (email) => {
 export const registerUser = async (name, email, hashedPassword, role) => {
   const conn = await getConnection();
   try {
-    await conn.execute(
-      `INSERT INTO users (name, email, password, role) VALUES (:name, :email, :password, :role)`,
-      [name, email, hashedPassword, role],
+    const result = await conn.execute(
+      `INSERT INTO users (name, email, password, role) 
+       VALUES (:name, :email, :password, :role)
+       RETURNING id, name, email, role INTO :out_id, :out_name, :out_email, :out_role`,
+      {
+        name,
+        email,
+        password: hashedPassword,
+        role,
+        out_id: { dir: OracleDB.BIND_OUT, type: OracleDB.NUMBER },
+        out_name: { dir: OracleDB.BIND_OUT, type: OracleDB.STRING },
+        out_email: { dir: OracleDB.BIND_OUT, type: OracleDB.STRING },
+        out_role: { dir: OracleDB.BIND_OUT, type: OracleDB.STRING }
+      },
       { autoCommit: true }
     );
-    return { success: true };
+
+    const user = {
+      id: (result.outBinds.out_id)[0],
+      name: (result.outBinds.out_name)[0],
+      email: (result.outBinds.out_email)[0],
+      role: (result.outBinds.out_role)[0]
+    };
+
+    return { success: true, user };
   } catch (err) {
     return { success: false, msg: err.message };
   } finally {

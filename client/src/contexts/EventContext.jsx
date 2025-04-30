@@ -20,6 +20,7 @@ export const EventProvider = ({ children }) => {
       setLoading(true);
       const res = await getOrganizerEvents(filters);
       setEvents(res.data);
+      setError(null);
     } catch (err) {
       setError(err.message || "Failed to fetch organizer events");
     } finally {

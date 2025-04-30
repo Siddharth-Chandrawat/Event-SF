@@ -22,15 +22,26 @@ const register = async (req, res) => {
       return res.status(400).json({ msg: result.msg });
     }
 
-    const token = jwt.sign({ email, role ,id: result.user.id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
+    // const token = jwt.sign({ email, role ,id: result.user.id }, process.env.JWT_SECRET, {
+    //   expiresIn: "1h",
+    // });
+    const user = { email, role ,id: result.user.id, name }
+    const { accessToken, refreshToken } = generateTokens(user);
+
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(201).json({
       msg: "User registered",
-      token,
+      accessToken,
       user: { id: result.user.id, name, email, role },
     });
+    
   } catch (error) {
     console.error("Registration error:", error);
     return res.status(500).json({ msg: "Registration failed" });
