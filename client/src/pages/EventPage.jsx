@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getEventById } from "../api/events";
+import { getEventById, postEventFeedback, fetchEventFeedback, joinEvent } from "../api/events";
 import useAuth from "../hooks/useAuth.js";
-import { postEventFeedback, fetchEventFeedback } from "../api/events";
-import { joinEvent } from "../api/events";
+import Navbar from "../components/Navbar.jsx";
+import { motion } from "framer-motion";
 import io from 'socket.io-client';
+import '../index.css';
 
 const SOCKET_URL = 'http://localhost:8000';
 const socket = io(SOCKET_URL);
@@ -39,36 +40,62 @@ const EventPage = () => {
     fetchEvent();
   }, [eventId]);
 
-    useEffect(() => {
-      const fetchFeedbacks = async () => {
-        try {
-          const data = await fetchEventFeedback(eventId);
-          setFeedbacks(data);
-        } catch (err) {
-          console.error(err);
-          setFeedbackError("Failed to load feedback.");
-        } finally {
-          setLoadingFeedback(false);
-        }
-      };
-    
-      fetchFeedbacks();
-    
-      const handleNewFeedback = (feedbackData) => {
-        //console.log('New feedback received from socket:', feedbackData);
-        fetchFeedbacks();
-      };
-    
-      socket.on('newFeedback', handleNewFeedback);
-    
-      return () => {
-        socket.off('newFeedback', handleNewFeedback);
-      };
-    }, [eventId, socket]); // Include socket in the dependency array
+  useEffect(() => {
+    const fetchFeedbacks = async () => {
+      try {
+        const data = await fetchEventFeedback(eventId);
+        setFeedbacks(data);
+      } catch (err) {
+        console.error(err);
+        setFeedbackError("Failed to load feedback.");
+      } finally {
+        setLoadingFeedback(false);
+      }
+    };
 
-  if (loading) return <p>Loading event...</p>;
-  if (error) return <p>{error}</p>;
-  if (!event) return <p>No event found.</p>;
+    fetchFeedbacks();
+
+    const handleNewFeedback = (feedbackData) => {
+      fetchFeedbacks();
+    };
+
+    socket.on('newFeedback', handleNewFeedback);
+
+    return () => {
+      socket.off('newFeedback', handleNewFeedback);
+    };
+  }, [eventId, socket]);
+
+  if (loading) return (
+    <motion.p
+      className="text-base text-gray-600 text-center pt-28"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      Loading event...
+    </motion.p>
+  );
+  if (error) return (
+    <motion.p
+      className="text-base text-red-500 text-center pt-28"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      {error}
+    </motion.p>
+  );
+  if (!event) return (
+    <motion.p
+      className="text-base text-gray-500 text-center pt-28"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      No event found.
+    </motion.p>
+  );
 
   const isParticipant = user?.role === "participant";
   const isOrganizer = user?.role === "organizer";
@@ -78,7 +105,6 @@ const EventPage = () => {
       const response = await postEventFeedback(eventId, user.id, feedbackText);
       setFeedbackStatus({ type: "success", message: "Feedback submitted successfully!" });
       setFeedbackText("");
-      // The new feedback will be received via the socket and automatically added to the list
     } catch (error) {
       console.error(error);
       setFeedbackStatus({ type: "error", message: "Failed to submit feedback. Please try again." });
@@ -99,88 +125,173 @@ const EventPage = () => {
   };
 
   return (
-    <div className="mx-auto p-6 bg-white shadow  mt-6 ">
-      <h1 className="text-3xl font-bold mb-2">{event.EVENT_TITLE}</h1>
-      <p className="text-gray-600 mb-1">
-        Date: {new Date(event.EVENT_START_DATE).toLocaleDateString()}
-      </p>
-      <p className="text-gray-600 mb-1">
-        Time: {event.EVENT_START_TIME} – {event.EVENT_END_TIME}
-      </p>
-      <p className="text-gray-600 mb-4">
-        Location: {event.EVENT_LOCATION || "Not specified"}
-      </p>
-
-      <p className="text-gray-800 whitespace-pre-line mb-4">
-        {event.EVENT_DESCRIPTION || "No description provided."}
-      </p>
-
-      {isParticipant && (
-        <button
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl mb-6"
-          onClick={handleJoin}
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-gray-50 pt-28 px-4">
+        <motion.div
+          className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6 space-y-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
         >
-          Join Event
-        </button>
-      )}
-
-      <hr className="my-4" />
-
-      {/* Feedback Section */}
-      <div>
-        <h2 className="text-xl font-semibold mb-2">Feedback</h2>
-
-        {/* Input box (participants only) */}
-        {isParticipant && (
-          <div className="mb-4">
-            <textarea
-              value={feedbackText}
-              onChange={(e) => setFeedbackText(e.target.value)}
-              placeholder="Leave your feedback..."
-              className="w-full p-3 border rounded-xl resize-none"
-              rows={3}
-            />
-            <button
-              onClick={handleFeedbackSubmit}
-              className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl"
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
+            <motion.h1
+              className="text-4xl font-bold text-gray-800 mb-4 sm:mb-0"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
             >
-              Submit Feedback
-            </button>
-            {feedbackStatus && (
-              <p className={`mt-2 ${feedbackStatus.type === "success" ? "text-green-600" : "text-red-600"}`}>
-                {feedbackStatus.message}
-              </p>
+              {event.EVENT_TITLE}
+            </motion.h1>
+            {isParticipant && (
+              <motion.button
+                className="w-full sm:w-auto bg-indigo-600 text-white px-6 py-3 rounded-lg text-base font-semibold hover:bg-indigo-700 transition duration-300"
+                onClick={handleJoin}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                whileHover={{ scale: 1.05 }}
+              >
+                Join Event
+              </motion.button>
             )}
           </div>
-        )}
+          <motion.div
+            className="text-sm text-gray-600 space-y-2"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <p>
+              <span className="text-teal-500">📅</span> {new Date(event.EVENT_START_DATE).toLocaleDateString()}
+            </p>
+            <p>
+              <span className="text-teal-500">🕒</span> {event.EVENT_START_TIME} – {event.EVENT_END_TIME}
+            </p>
+            <p>
+              <span className="text-teal-500">📍</span> {event.EVENT_LOCATION || "Not specified"}
+            </p>
+          </motion.div>
+          <motion.p
+            className="text-base text-gray-700 whitespace-pre-line"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            {event.EVENT_DESCRIPTION || "No description provided."}
+          </motion.p>
 
-        <div className="space-y-4">
-          {loadingFb ? (
-            <p>Loading feedback…</p>
-          ) : errorFb ? (
-            <p className="text-red-500">{errorFb}</p>
-          ) : feedbacks.length === 0 ? (
-            <p className="text-gray-500">No comments yet.</p>
-          ) : (
-            feedbacks.map((fb, idx) => {
-              const id = fb.FEEDBACK_ID ?? fb.id ?? idx;
-              const userName = fb.USER_NAME ?? fb.user_name ?? fb.userName ?? "Unknown";
-              const comment = fb.COMMENT_TEXT ?? fb.comment_text ?? fb.comment ?? "";
-              const raw = fb.CREATED_AT ?? fb.created_at;
-              const date = raw ? new Date(raw).toLocaleString() : "No timestamp";
+          <div className="pt-12" />
 
-              return (
-                <div key={id} className="bg-gray-200 rounded-lg p-4 mb-4">
-                  <p className="font-medium">{userName}</p>
-                  <p className="text-gray-700">{comment}</p>
-                  <p className="text-sm text-gray-500">{date}</p>
-                </div>
-              );
-            })
-          )}
-        </div>
+          {/* Feedback Section */}
+          <motion.div
+            className="space-y-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <h2 className="text-lg font-semibold text-gray-800">Feedbacks</h2>
+
+            {/* Input box (participants only) */}
+            {isParticipant && (
+              <div className="space-y-4">
+                <motion.textarea
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  placeholder="Leave your feedback..."
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-300 resize-none"
+                  rows={3}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.5 }}
+                />
+                <motion.button
+                  onClick={handleFeedbackSubmit}
+                  className="w-full sm:w-auto bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition duration-300"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.6 }}
+                  whileHover={{ scale: 1.05 }}
+                >
+                  Submit Feedback
+                </motion.button>
+                {feedbackStatus && (
+                  <motion.p
+                    className={`text-sm ${feedbackStatus.type === "success" ? "text-teal-500" : "text-red-500"}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    {feedbackStatus.message}
+                  </motion.p>
+                )}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              {loadingFb ? (
+                <motion.p
+                  className="text-base text-teal-500"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  Loading feedback…
+                </motion.p>
+              ) : errorFb ? (
+                <motion.p
+                  className="text-base text-red-500"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  {errorFb}
+                </motion.p>
+              ) : feedbacks.length === 0 ? (
+                <motion.p
+                  className="text-base text-gray-500"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  No comments yet.
+                </motion.p>
+              ) : (
+                feedbacks.map((fb, idx) => {
+                  const id = fb.FEEDBACK_ID ?? fb.id ?? idx;
+                  const userName = fb.USER_NAME ?? fb.user_name ?? fb.userName ?? "Unknown";
+                  const comment = fb.COMMENT_TEXT ?? fb.comment_text ?? fb.comment ?? "";
+                  const raw = fb.CREATED_AT ?? fb.created_at;
+                  const date = raw ? new Date(raw).toLocaleString() : "No timestamp";
+                  const initial = userName.charAt(0).toUpperCase();
+
+                  return (
+                    <motion.div
+                      key={id}
+                      className="flex items-start space-x-4 bg-gray-100 rounded-lg p-4 hover:bg-gray-200 transition duration-300"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: idx * 0.1 }}
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-teal-500 text-white flex items-center justify-center text-base font-semibold">
+                        {initial}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm font-medium text-gray-800">{userName}</p>
+                          <p className="text-sm text-gray-500">{date}</p>
+                        </div>
+                        <p className="text-lg text-gray-700">{comment}</p>
+                      </div>
+                    </motion.div>
+                  );
+                })
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
       </div>
-    </div>
+    </>
   );
 };
 
