@@ -13,6 +13,7 @@ export const EventProvider = ({ children }) => {
   const [myEvents, setMyEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [slotSuggestions, setSlotSuggestions] = useState([]); 
 
   // 🔵 Organizer: Fetch their own created events
   const fetchOrganizerEvents = async (filters = {}) => {
@@ -58,10 +59,29 @@ export const EventProvider = ({ children }) => {
   const createEvent = async (eventData) => {
     try {
       setLoading(true);
+      setError(null);
+      setSlotSuggestions([]);
+
       const res = await createNewEvent(eventData);
-      //setEvents((prev) => [...prev, res.data]);
+
+      if (res.status === 201) {
+        // Optionally append to events list:
+        // setEvents(prev => [...prev, res.data]);
+        return true;
+      }
+      // Unexpected non-201 status:
+      setError("Unexpected response creating event");
+      return false;
     } catch (err) {
+      // 409 Conflict => slot unavailable
+      if (err.response?.status === 409 && err.response.data?.suggestions) {
+        setSlotSuggestions(err.response.data.suggestions);
+        setError("Time slot unavailable—see suggestions below");
+        return false;
+      }
+      // Other errors
       setError(err.message || "Failed to create event");
+      return false;
     } finally {
       setLoading(false);
     }
@@ -76,6 +96,7 @@ export const EventProvider = ({ children }) => {
         fetchParticipantEvents,
         fetchMyEvents,
         createEvent,
+        slotSuggestions,
         loading,
         error,
       }}
