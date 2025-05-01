@@ -80,7 +80,7 @@ export const EventProvider = ({ children }) => {
         return false;
       }
       // Other errors
-      setError(err.message || "Failed to create event");
+      setError(err.message);
       return false;
     } finally {
       setLoading(false);

@@ -30,6 +30,7 @@ const ParticipantDashboard = () => {
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
+    console.log(value);
     setFilter((prev) => ({ ...prev, [name]: value }));
   };
 
