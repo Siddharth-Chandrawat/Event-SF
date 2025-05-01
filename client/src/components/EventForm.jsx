@@ -4,9 +4,10 @@ import { motion } from "framer-motion";
 import '../index.css';
 import { useNavigate } from "react-router-dom";
 
-const EventForm = ({ onSubmit }) => {
+const EventForm = ({onSubmit}) => {
+  const { createEvent, loading, error, setError, slotSuggestions } = useEventContext();
   let navigate = useNavigate();
-  const { createEvent, loading } = useEventContext();
+  
 
   const [formData, setFormData] = useState({
     title: "",
@@ -15,7 +16,7 @@ const EventForm = ({ onSubmit }) => {
     end_datetime: "",
     location: "",
   });
-  const [error, setError] = useState(null);
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -53,7 +54,6 @@ const EventForm = ({ onSubmit }) => {
     };
 
     try {
-      await createEvent(eventData);
       setFormData({
         title: "",
         description: "",
@@ -70,6 +70,7 @@ const EventForm = ({ onSubmit }) => {
   };
 
   return (
+    <>
     <motion.form
       onSubmit={handleSubmit}
       className="bg-white p-6 rounded-lg shadow-md space-y-6"
@@ -161,6 +162,24 @@ const EventForm = ({ onSubmit }) => {
         {loading ? "Creating..." : "Create Event"}
       </motion.button>
     </motion.form>
+
+
+     {error && (
+      <div className="mt-4 p-3 bg-red-100 text-red-800 rounded">
+        <p>{error}</p>
+        {slotSuggestions.length > 0 && (
+          <ul className="mt-2 list-disc list-inside">
+            {slotSuggestions.map((slot, idx) => (
+              <li key={idx}>
+                {new Date(slot.start_time).toLocaleString()} –{" "}
+                {new Date(slot.end_time).toLocaleString()}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    )}
+    </>
   );
 };
 

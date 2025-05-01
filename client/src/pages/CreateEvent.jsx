@@ -1,9 +1,11 @@
 import EventForm from "../components/EventForm";
 import Navbar from "../components/Navbar";
 import { motion } from "framer-motion";
+import { useEventContext } from "../contexts/EventContext";
 import '../index.css';
 
 const EventCreator = () => {
+  const { createEvent } = useEventContext(); // Assuming you have a context to handle events`
   const handleCreate = async (eventData) => {
     await createEvent(eventData); // context handles update
   };

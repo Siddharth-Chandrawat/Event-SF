@@ -2,31 +2,81 @@ import { createEventQuery, getAllEventsQuery, getOrganizerEventsQuery } from "..
 import { fetchEventById } from "../db/eventQueries.js";
 import { insertParticipation } from "../db/eventQueries.js";
 import { getMyEventsQuery } from "../db/eventQueries.js";
+import IntervalTree from "../utils/intervalTree.js"; 
 
 export const createEvent = async (req, res) => {
   const { title, description, location, start_date, start_time, end_time } = req.body;
   const organizer_id = req.user.id;
-
-  if (!title || !start_date || !start_time || !end_time) {
+  if (!title || !start_date || !start_time || !end_time || !location) {
     return res.status(400).json({ msg: "Missing required fields" });
   }
 
   try {
-    const result = await createEventQuery({
-      title,
-      description, 
-      location, 
-      start_date, 
-      start_time, 
-      end_time,
-      organizer_id,
-    });
+    const existing = await getAllEventsQuery(start_date, null , location);
+    // console.log("Existing events:", existing);
+    const tree = new IntervalTree();
+    const allIntervals = existing.map((evt => {
+      const low = new Date(`${evt.start_date} ${evt.start_time}`).getTime();
+      // console.log("Low:", low);
+      const high = new Date(`${evt.start_date} ${evt.end_time}`).getTime();
+      tree.insert({low , high });
+      return {low , high };
+    }));
 
-    if (!result.success) {
-      return res.status(500).json({ msg: result.msg });
+    const reqLow = new Date(`${start_date} ${start_time}`).getTime();
+    const reqHigh = new Date(`${start_date} ${end_time}`).getTime();
+    const conflict = tree.searchAny({low: reqLow, high: reqHigh});
+
+    if(!conflict) {
+      // slot is free , create event
+      const result = await createEventQuery({
+        title,
+        description, 
+        location, 
+        start_date, 
+        start_time, 
+        end_time,
+        organizer_id,
+      });
+
+      if (!result.success) {
+        return res.status(500).json({ msg: result.msg });
+      }
+
+      return res.status(201).json({ msg: "Event created successfully" });
     }
 
-    return res.status(201).json({ msg: "Event created successfully" });
+    allIntervals.sort((a, b => a.low - b.low));
+    const duration = reqHigh - reqLow;
+    const suggestions = [];
+
+    if(reqLow < allIntervals[0].low) {
+      suggestions.push({
+        start_time : new Date(reqLow).toISOString(),
+        end_time: new Date(Math.min(reqLow + duration , allIntervals[0].low)).toISOString()
+      });
+    }
+
+    for (let i = 0; i < allIntervals.length - 1; i++) {
+      const gapStart = allIntervals[i].high;
+      const fapEnd = allIntervals[i + 1].low;
+      if(gapEnd - gapStart >= duration) {
+        suggestions.push({
+          start_time: new Date(gapStart).toISOString(),
+          end_time: new Date(gapStart + duration).toISOString()
+        });
+        break;
+      }
+    }
+
+    const last = allIntervals[allIntervals.length - 1];
+    suggestions.push({
+      start_time: new Date(last.high).toISOString(),
+      end_time: new Date(last.high + duration).toISOString()
+    });
+
+    return res.status(409).json({ msg: "Time slot unavailable", suggestions });
+
   } catch (err) {
     console.error("Create event error:", err);
     return res.status(500).json({ msg: "Server error" });

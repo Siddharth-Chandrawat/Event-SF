@@ -71,38 +71,62 @@ export const fetchEventById = async (eventId) => {
 };
 
 
-export const getAllEventsQuery = async (date, month) => {
+export const getAllEventsQuery = async (date, month, location = '') => {
   const conn = await getConnection();
+
   try {
-    
-    let query = `SELECT * FROM events`;
-    let params = {}; // Only include what is actually used
+    let query = `
+      SELECT
+        event_id,
+        event_title,
+        event_description,
+        event_organizer_id,
+        event_start_date,
+        event_start_time,
+        event_end_time,
+        event_location,
+        event_created_at
+      FROM events
+    `;
 
-    //chal nahi rha with date, maybe params ke andar 'data' variable ka naam change karna
-    //if (date !== '') {
-    //  params.date = date; // pass as 'YYYY-MM-DD'
-    //  query += ` WHERE TRUNC(event_start_date) = TO_DATE(:date, 'YYYY-MM-DD')`;
-    //} else if (month !== '') {
-    //  params.month = parseInt(month, 10);
-    //  query += ` WHERE EXTRACT(MONTH FROM event_start_date) = :month`;
-    //}
+    const clauses = [];
+    const params = {};
 
-    //query += ` WHERE TRUNC(event_start_date) = TO_DATE('2025-04-23', 'YYYY-MM-DD')`;
-    if (month !== '') {
-      params.month = parseInt(month, 10);
-      query += ` WHERE EXTRACT(MONTH FROM event_start_date) = :month`;
+    // 1) Filter by exact date (YYYY-MM-DD)
+    if (typeof date === 'string' && date.trim() !== '') {
+      params.bDate = date.trim();
+      clauses.push(`TRUNC(event_start_date) = TO_DATE(:bDate, 'YYYY-MM-DD')`);
     }
 
-    //console.log("Query:", query);
-    //console.log("Params:", params);
+    // 2) Filter by month (1–12)
+    if (typeof month === 'string' && month.trim() !== '') {
+      const m = parseInt(month, 10);
+      if (!isNaN(m)) {
+        params.bMonth = m;
+        clauses.push(`EXTRACT(MONTH FROM event_start_date) = :bMonth`);
+      }
+    }
 
+    // 3) Filter by location
+    if (typeof location === 'string' && location.trim() !== '') {
+      params.bLocation = location.trim();
+      clauses.push(`event_location = :bLocation`);
+    }
+
+    // Build WHERE clause if any filters are present
+    if (clauses.length) {
+      query += ' WHERE ' + clauses.join(' AND ');
+    }
+
+    // Execute the query
     const result = await conn.execute(query, params, {
       outFormat: OracleDB.OUT_FORMAT_OBJECT,
     });
 
+    // Convert any CLOBs to strings
     const rows = await Promise.all(
       result.rows.map(async (row) => {
-        if (row.EVENT_DESCRIPTION && typeof row.EVENT_DESCRIPTION === "object") {
+        if (row.EVENT_DESCRIPTION && typeof row.EVENT_DESCRIPTION === 'object') {
           row.EVENT_DESCRIPTION = await readClob(row.EVENT_DESCRIPTION);
         }
         return row;
@@ -114,6 +138,7 @@ export const getAllEventsQuery = async (date, month) => {
     await conn.close();
   }
 };
+
 
 
 export const getOrganizerEventsQuery = async (organizerId, date, month) => {
