@@ -23,8 +23,8 @@ const AuthProvider = ({ children }) => {
   //  }
   //}, []);
 
-  const login = async (email, password) => {
-    const res = await loginUser(email, password);
+  const login = async (email, password, role) => {
+    const res = await loginUser(email, password, role);
     const { accessToken, user } = res.data;
 
     localStorage.setItem("token", accessToken);

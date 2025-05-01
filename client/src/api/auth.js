@@ -1,7 +1,7 @@
 import axios from "./axiosInstance";
 
-export const loginUser = (email, password) => {
-  return axios.post("/auth/login", { email, password }, { withCredentials: true });
+export const loginUser = (email, password, role) => {
+  return axios.post("/auth/login", { email, password, role }, { withCredentials: true });
 };
 
 export const registerUser = (name, email, password, role) => {

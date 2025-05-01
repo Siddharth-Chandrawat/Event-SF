@@ -50,9 +50,9 @@ const register = async (req, res) => {
 
 
 const login = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, role } = req.body;
 
-  const user = await getUserByEmail(email);
+  const user = await getUserByEmail(email, role);
 
   if (!user) return res.status(400).json({ msg: "User does not exist" });
 

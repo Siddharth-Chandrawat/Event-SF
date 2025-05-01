@@ -2,12 +2,12 @@ import OracleDB from "oracledb";
 import { getConnection } from "./db.js";
 import { normalizeUser } from "../utils/auth.js";
 
-export const getUserByEmail = async (email) => {
+export const getUserByEmail = async (email, role) => {
   const conn = await getConnection();
   try {
     const result = await conn.execute(
-      `SELECT * FROM users WHERE email = :email`,
-      [email],
+      `SELECT * FROM users WHERE email = :email AND role = :role`,
+      [email, role],
       { outFormat: OracleDB.OUT_FORMAT_OBJECT }
     );
     return normalizeUser(result.rows[0]);
