@@ -5,11 +5,6 @@ import { useEventContext } from "../contexts/EventContext";
 import '../index.css';
 
 const EventCreator = () => {
-  const { createEvent } = useEventContext(); // Assuming you have a context to handle events`
-  const handleCreate = async (eventData) => {
-    await createEvent(eventData); // context handles update
-    
-  };
 
   return (
     <>
@@ -22,7 +17,7 @@ const EventCreator = () => {
           transition={{ duration: 0.5, ease: "easeOut" }}
         >
           <h1 className="text-2xl font-bold text-gray-800 mb-6">Create New Event</h1>
-          <EventForm onSubmit={handleCreate} />
+          <EventForm />
         </motion.div>
       </div>
     </>

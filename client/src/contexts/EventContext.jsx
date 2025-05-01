@@ -72,7 +72,8 @@ export const EventProvider = ({ children }) => {
         setError("Time slot unavailable—see suggestions below");
         return false;
       }
-      setError(err.message || "Failed to create event");
+      // Other errors
+      setError(err.message);
       return false;
     } finally {
       setLoading(false);

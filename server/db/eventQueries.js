@@ -174,7 +174,7 @@ export const getOrganizerEventsQuery = async (organizerId, date, month) => {
 export const getMyEventsQuery = async (userId, date, month) => {
   const conn = await getConnection();
   try {
-    let sql = `
+    let query = `
       SELECT
         e.event_id AS EVENT_ID,
         e.event_title AS EVENT_TITLE,
@@ -187,26 +187,36 @@ export const getMyEventsQuery = async (userId, date, month) => {
       FROM events e
       JOIN participant_events pe
         ON pe.event_id = e.event_id
-      WHERE pe.user_id = :userId
     `;
     const params = { userId };
 
-    if (month) {
-      params.month = parseInt(month, 10);
-      sql += ` AND EXTRACT(MONTH FROM e.event_start_date) = :month`;
+    const clauses = [ `pe.user_id = :userId`];
+
+    // 1) Filter by exact date (YYYY-MM-DD)
+    if (typeof date === 'string' && date.trim() !== '') {
+      params.bDate = date.trim();
+      clauses.push(`TRUNC(event_start_date) = TO_DATE(:bDate, 'YYYY-MM-DD')`);
     }
 
-    sql += ` ORDER BY e.event_start_date, e.event_start_time`;
+    // 2) Filter by month (1–12)
+    if (typeof month === 'string' && month.trim() !== '') {
+      const m = parseInt(month, 10);
+      if (!isNaN(m)) {
+        params.bMonth = m;
+        clauses.push(`EXTRACT(MONTH FROM event_start_date) = :bMonth`);
+      }
+    }
 
-    console.log("Executing SQL:", sql);
-    console.log("With parameters:", params);
 
-    const result = await conn.execute(
-      sql,
-      params,
-      { outFormat: OracleDB.OUT_FORMAT_OBJECT }
-    );
-    // console.log("Query Result Rows:", result.rows);
+    // Build WHERE clause if any filters are present
+    if (clauses.length) {
+      query += ' WHERE ' + clauses.join(' AND ');
+    }
+
+    // Execute the query
+    const result = await conn.execute(query, params, {
+      outFormat: OracleDB.OUT_FORMAT_OBJECT,
+    });
 
     const rows = await Promise.all(
       result.rows.map(async (row) => {
