@@ -99,6 +99,7 @@ export const EventProvider = ({ children }) => {
         slotSuggestions,
         loading,
         error,
+        setError,
       }}
     >
       {children}
