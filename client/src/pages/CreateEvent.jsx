@@ -8,6 +8,7 @@ const EventCreator = () => {
   const { createEvent } = useEventContext(); // Assuming you have a context to handle events`
   const handleCreate = async (eventData) => {
     await createEvent(eventData); // context handles update
+    
   };
 
   return (

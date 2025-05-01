@@ -248,3 +248,17 @@ export const insertParticipation = async (userId, eventId) => {
     await conn.close();
   }
 };
+
+export const deleteEventById = async (eventId) => {
+  const conn = await getConnection();
+  try {
+    await conn.execute(
+      `DELETE FROM events
+       WHERE event_id = :eventId`,
+      { eventId },
+      { autoCommit: true }
+    );
+  } finally {
+    await conn.close();
+  }
+};

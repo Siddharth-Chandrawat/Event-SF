@@ -6,7 +6,12 @@ CREATE TABLE feedback (
   user_id NUMBER NOT NULL,
   comment_text VARCHAR2(1000) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE
+  FOREIGN KEY (event_id)
+    REFERENCES events(event_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (user_id)
+    REFERENCES users(id)
+    ON DELETE CASCADE   -- ← optional: clean up feedback when a user is removed
 );
 
 select * from feedback;

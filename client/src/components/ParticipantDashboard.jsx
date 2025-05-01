@@ -3,6 +3,10 @@ import { useEventContext } from "../hooks/useEventContext.js";
 import EventCard from "./EventCard";
 import { motion } from "framer-motion";
 import '../index.css';
+import io from 'socket.io-client';
+
+const SOCKET_URL = 'http://localhost:8000';
+const socket = io(SOCKET_URL);
 
 const ParticipantDashboard = () => {
   const {
@@ -24,7 +28,21 @@ const ParticipantDashboard = () => {
     } else {
       fetchParticipantEvents(filter);
     }
-  }, [activeTab, filter]);
+
+    socket.on("eventDeleted", (eventId) => {
+      console.log("Event deleted:", eventId);
+      if (activeTab === "my") {
+        fetchMyEvents(filter);
+      } else {
+        fetchParticipantEvents(filter);
+      }
+    });
+
+    return () => {
+      socket.off("eventDeleted");
+    };
+
+  }, [activeTab, filter , socket]);
 
   const handleTabSwitch = (tab) => setActiveTab(tab);
 

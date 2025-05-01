@@ -47,3 +47,9 @@ export const joinEvent = async (eventId) => {
   );
   return response.data;
 };
+
+export const deleteEventById = async (eventId) => {
+  const response = await axiosInstance.delete(`/events/${eventId}`);
+  // console.log("Delete response:", response.data); 
+  return response.data; 
+};

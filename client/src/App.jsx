@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import EventCreator from "./pages/CreateEvent.jsx"
 import EventPage from "./pages/EventPage.jsx";
 import "./App.css"; 
+
 const App = () => {
   return (
     <Router>

@@ -1,7 +1,7 @@
 import { createEventQuery, getAllEventsQuery, getOrganizerEventsQuery } from "../db/eventQueries.js";
 import { fetchEventById } from "../db/eventQueries.js";
 import { insertParticipation } from "../db/eventQueries.js";
-import { getMyEventsQuery } from "../db/eventQueries.js";
+import { getMyEventsQuery , deleteEventById } from "../db/eventQueries.js";
 import IntervalTree from "../utils/intervalTree.js"; 
 
 export const createEvent = async (req, res) => {
@@ -172,4 +172,30 @@ export const joinEvent = async (req, res) => {
   
     return res.status(500).json({ message: "Could not join event.", error: error.message });
   }  
+};
+
+export const deleteEvent = async (req, res) => {
+  try {
+    const eventId = parseInt(req.params.eventId, 10);
+    const event = await fetchEventById(eventId);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    await deleteEventById(eventId);
+
+    const io = req.io;
+    if (io) {
+      io.emit('eventDeleted', { eventId });
+      console.log("One event was recently deleted :", eventId);
+    } else {
+      console.error("Socket.IO instance not available in event controller.");
+    }
+    
+    return res.json({ message: "Event deleted successfully" });
+  } catch (err) {
+    console.error("Delete event error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
 };

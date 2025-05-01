@@ -4,6 +4,7 @@ import {
   getParticipantEvents,
   getMyEvents,
   createNewEvent,
+  deleteEventById, // ✅ 1. Import delete API function
 } from "../api/events";
 
 export const EventContext = createContext();
@@ -13,9 +14,8 @@ export const EventProvider = ({ children }) => {
   const [myEvents, setMyEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [slotSuggestions, setSlotSuggestions] = useState([]); 
+  const [slotSuggestions, setSlotSuggestions] = useState([]);
 
-  // 🔵 Organizer: Fetch their own created events
   const fetchOrganizerEvents = async (filters = {}) => {
     try {
       setLoading(true);
@@ -29,7 +29,6 @@ export const EventProvider = ({ children }) => {
     }
   };
 
-  // 🟢 Participant: Fetch all public events
   const fetchParticipantEvents = async (filters = {}) => {
     try {
       setLoading(true);
@@ -42,7 +41,6 @@ export const EventProvider = ({ children }) => {
     }
   };
 
-  // 🟡 Participant: Fetch events they're registered in
   const fetchMyEvents = async (filters = {}) => {
     try {
       setLoading(true);
@@ -55,7 +53,6 @@ export const EventProvider = ({ children }) => {
     }
   };
 
-  // 🔺 Organizer: Create new event
   const createEvent = async (eventData) => {
     try {
       setLoading(true);
@@ -65,23 +62,31 @@ export const EventProvider = ({ children }) => {
       const res = await createNewEvent(eventData);
 
       if (res.status === 201) {
-        // Optionally append to events list:
-        // setEvents(prev => [...prev, res.data]);
         return true;
       }
-      // Unexpected non-201 status:
       setError("Unexpected response creating event");
       return false;
     } catch (err) {
-      // 409 Conflict => slot unavailable
       if (err.response?.status === 409 && err.response.data?.suggestions) {
         setSlotSuggestions(err.response.data.suggestions);
         setError("Time slot unavailable—see suggestions below");
         return false;
       }
-      // Other errors
       setError(err.message || "Failed to create event");
       return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ 2. Add delete function
+  const deleteEvent = async (eventId) => {
+    try {
+      setLoading(true);
+      await deleteEventById(eventId);
+      setEvents(prev => prev.filter(e => e.event_id !== eventId));
+    } catch (err) {
+      setError(err.message || "Failed to delete event");
     } finally {
       setLoading(false);
     }
@@ -96,6 +101,7 @@ export const EventProvider = ({ children }) => {
         fetchParticipantEvents,
         fetchMyEvents,
         createEvent,
+        deleteEvent, // ✅ 3. Expose it
         slotSuggestions,
         loading,
         error,

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createEvent, getOrganizerEvents, getAllEvents, getMyEvents, getEventById } from "../controllers/eventController.js";
+import { createEvent, getOrganizerEvents, getAllEvents, getMyEvents, getEventById, deleteEvent } from "../controllers/eventController.js";
 import {verifyToken} from "../middleware/verifyToken.js"; 
 import {checkRole} from "../middleware/checkRole.js"; 
 import { joinEvent as joinEventController } from "../controllers/eventController.js";
@@ -12,5 +12,5 @@ router.get("/participant/myevents", verifyToken, checkRole("participant"), getMy
 router.get("/:eventId", getEventById); 
 router.post("/create", verifyToken, checkRole("organizer"), createEvent);
 router.post("/:eventId/join", verifyToken, checkRole("participant"), joinEventController);
-
+router.delete("/:eventId", verifyToken, checkRole("organizer"), deleteEvent);
 export default router;

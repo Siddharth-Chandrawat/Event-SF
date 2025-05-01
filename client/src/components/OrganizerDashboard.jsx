@@ -3,13 +3,26 @@ import { useEventContext } from "../hooks/useEventContext.js";
 import EventCard from "../components/EventCard";
 import { motion } from "framer-motion";
 import '../index.css';
+import io from 'socket.io-client';
+
+const SOCKET_URL = 'http://localhost:8000';
+const socket = io(SOCKET_URL);
 
 const OrganizerDashboard = () => {
   const { events, fetchOrganizerEvents, createEvent, loading, error } = useEventContext();
 
   useEffect(() => {
     fetchOrganizerEvents();
-  }, []);
+
+    socket.on("eventDeleted", (eventId) => {
+      console.log("Event deleted:", eventId);
+      fetchOrganizerEvents(); 
+    });
+    
+    return () => {
+      socket.off("eventDeleted");
+    };
+  }, [socket]);
 
   return (
     <div className="p-6 space-y-8">
