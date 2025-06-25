@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import '../index.css';
 import io from 'socket.io-client';
 
-const SOCKET_URL = 'http://localhost:8000';
+const SOCKET_URL = 'https://event-sf-server.onrender.com';
 const socket = io(SOCKET_URL);
 
 const OrganizerDashboard = () => {
