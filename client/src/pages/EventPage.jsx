@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import io from 'socket.io-client';
 import '../index.css';
 
-const SOCKET_URL = 'http://localhost:8000';
+const SOCKET_URL = 'https://event-sf-server.onrender.com';
 const socket = io(SOCKET_URL);
 
 const EventPage = () => {
